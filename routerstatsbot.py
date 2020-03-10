@@ -20,7 +20,7 @@ last_message_id = {}
 transmission_info_five_minutes = {}
 trans_count = 0
 
-with open("conf.backup", "r") as config:
+with open("conf", "r") as config:
     key = config.readline().split(":", 1)[-1].strip()
     allowed_users = [int(x) for x in config.readline().split(':', 1)[-1].strip().split(',') if len(x) > 0]
     router_ip = config.readline().split(':', 1)[-1].strip()

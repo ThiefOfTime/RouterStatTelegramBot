@@ -1,2 +1,4 @@
-pickle:[user_data path]
 key:[telegram token]
+allowed_users:[list of user ids separated through ","]
+router_ip:[router ip]
+router_pw:[router pw]
