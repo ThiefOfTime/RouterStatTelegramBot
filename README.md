@@ -7,4 +7,4 @@ The script was programmed and tested with Python3.7
 ## Installation
 Run `pip install -r requirements.txt`  
 Edit the conf file by replacing the placeholders with corresponding values  
-After installing the packages simply run `python arxivbot.py`
+After installing the packages simply run `python routerstatsbot.py`
