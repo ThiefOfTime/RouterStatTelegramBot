@@ -19,6 +19,8 @@ host_list = {}
 last_message_id = {}
 transmission_info_five_minutes = {}
 trans_count = 0
+user_change = {}
+user_change_message_id = {}
 
 with open("conf", "r") as config:
     key = config.readline().split(":", 1)[-1].strip()
@@ -123,21 +125,38 @@ def report(context):
 
 def gather(context):
     global host_list
-    global gather_message_id
+    global user_change
     cur_hosts = {host['mac']: host['name'] for host in router_host.get_hosts_info() if host['status']}
     missing_hosts = set(host_list.keys()) - set(cur_hosts.keys())
     new_hosts = set(cur_hosts.keys()) - set(host_list.keys())
     if len(missing_hosts) > 0:
-        for user in allowed_users:
-            bot.sendMessage(chat_id=user,
-                                text=f"Following devices left the network:\n"
-                                f" {','.join(list(host_list[f] for f in missing_hosts))}")
+        for f in missing_hosts:
+            if f in user_change.keys():
+                user_change[f] = (user_change[f][0], user_change[f][1] - 1)
+            else:
+                user_change[f] = (host_list[f], -1)
     if len(new_hosts) > 0:
-        for user in allowed_users:
-            bot.sendMessage(chat_id=user,
-                            text=f"Following devices joined the network:\n"
-                                f" {','.join(list(cur_hosts[f] for f in new_hosts))}")
+        for f in new_hosts:
+            if f in user_change.keys():
+                user_change[f] = (user_change[f][0], user_change[f][1] + 1)
+            else:
+                user_change[f] = (cur_hosts[f], 1)
     host_list = cur_hosts
+
+
+def gather_report(context):
+    global user_change
+    for user in allowed_users:
+        if len(user_change_message_id.keys()) > 0:
+            bot.delete_message(chat_id=user, message_id=user_change_message_id[user])
+        message_id_obj = bot.sendMessage(chat_id=user,
+                        text=f"Following devices left the network:\n"
+                             f" {','.join(list(f for f, i in user_change.values() if i < 0))}\n\n"
+                             f"Following devices joined the network:\n"
+                             f" {','.join(list(f for f, i in user_change.values() if i > 0))}")
+        user_change_message_id[user] = message_id_obj.message_id
+
+    user_change = {}
 
 
 # Telegram functions
@@ -179,6 +198,7 @@ updater.dispatcher.add_handler(CommandHandler('check', check, Filters.user(allow
 updater.dispatcher.add_handler(CommandHandler('getnewip', get_new_ip, Filters.user(allowed_users)))
 
 jobs = updater.job_queue
+job_gather_report = jobs.run_repeating(gather_report, interval=300, first=300)
 job_report = jobs.run_repeating(report, interval=300, first=300)
 job_gather = jobs.run_repeating(gather, interval=10, first=0)
 job_gather_trans = jobs.run_repeating(gather_transmission_informations, interval=1, first=0)
