@@ -146,17 +146,18 @@ def gather(context):
 
 def gather_report(context):
     global user_change
-    for user in allowed_users:
-        if len(user_change_message_id.keys()) > 0:
-            bot.delete_message(chat_id=user, message_id=user_change_message_id[user])
-        message_id_obj = bot.sendMessage(chat_id=user,
-                        text=f"Following devices left the network:\n"
-                             f" {','.join(list(f for f, i in user_change.values() if i < 0))}\n\n"
-                             f"Following devices joined the network:\n"
-                             f" {','.join(list(f for f, i in user_change.values() if i > 0))}")
-        user_change_message_id[user] = message_id_obj.message_id
+    if len(user_change.keys()) > 0:
+        for user in allowed_users:
+            if len(user_change_message_id.keys()) > 0:
+                bot.delete_message(chat_id=user, message_id=user_change_message_id[user])
+            message_id_obj = bot.sendMessage(chat_id=user,
+                            text=f"Following devices left the network:\n"
+                                 f" {','.join(list(f for f, i in user_change.values() if i < 0))}\n\n"
+                                 f"Following devices joined the network:\n"
+                                 f" {','.join(list(f for f, i in user_change.values() if i > 0))}")
+            user_change_message_id[user] = message_id_obj.message_id
 
-    user_change = {}
+        user_change = {}
 
 
 # Telegram functions
