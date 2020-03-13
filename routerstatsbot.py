@@ -146,7 +146,7 @@ def gather(context):
 
 def gather_report(context):
     global user_change
-    if len(user_change.keys()) > 0 or not sum(user_change.values()[1]) == 0:
+    if len(user_change.keys()) > 0 or not sum(u[1] for u in user_change.values()) == 0:
         for user in allowed_users:
             if len(user_change_message_id.keys()) > 0:
                 bot.delete_message(chat_id=user, message_id=user_change_message_id[user])
